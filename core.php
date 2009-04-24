@@ -53,6 +53,11 @@
 		exit;
 	}
 
+	/**
+	 * @todo split config and reintroduce the new config-style
+	 */
+	require_once( 'config/general.inc.php' );
+
 
 	# Load constants and configuration files
   	require_once( dirname( __FILE__ ).DIRECTORY_SEPARATOR.'core'.DIRECTORY_SEPARATOR.'constant_inc.php' );
@@ -82,7 +87,7 @@
 	 *  @todo may be this could be done via .htaccess
 	 */
 	$t_include_path = ini_get( 'include_path' );
-	$t_include_path = $g_config_template['smarty_dir'].':'.implode( ':', $g_fs_paths ).':'.$t_include_path;
+	$t_include_path = $g_config['template']['dir_smarty'].':'.implode( ':', $g_fs_paths ).':'.$t_include_path;
 
 	ini_set( 'include_path', $t_include_path );
 	unset( $t_include_path );
@@ -269,6 +274,11 @@
 	 */
 	$g_template->mantis_enable_html_header();
 	$g_template->mantis_enable_html_body_head();
+
+	/**
+	 * @todo only use this until we don't have one
+	 */
+	$g_template->mantis_set_module('login');
 
 	/**
 	 * @todo this has to be at the end of the whole process, but for migration we need it here!

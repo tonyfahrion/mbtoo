@@ -62,3 +62,16 @@ javascript preferences
    => make some "static-content" replacements in JS and enable the user to activate them seperately
      - like "I like to have the AJAX-project-selector - but not the auto-copletion while I'm typing a search request"
    => make it possible for the user to enable effects like dialogs (instead of page-reload), smooth content fades and so on
+
+improve translation handling
+=========================
+ Convert current translation-format into another one. May be the Qt or KDE format!?
+   => implement a faster way to support multiple languages [DONE]
+   => make translations format-independen (XML, PHP-array and so on)
+   => don't hardcode the translation-list (in config_default_inc.php)
+     >> generate the list dynamicaly while analysing available translations
+
+first steps install assistant
+========================
+ Provide an assistant which help you to set up your first project and so on...
+

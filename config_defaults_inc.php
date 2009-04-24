@@ -625,12 +625,15 @@
 	 * If the language is set to 'auto', the actual
 	 * language is determined by the user agent (web browser)
 	 * language preference.
+	 *
+	 * @deprecated
 	 * @global string $g_default_language
 	 */
-	$g_default_language		= 'english';
+	$g_default_language =& $g_config['default_lang'];
 
 	/**
 	 * list the choices that the users are allowed to choose
+	 * @todo should be generated dynamicaly
 	 * @global array $g_language_choices_arr
 	 */
 	$g_language_choices_arr	= array(
@@ -683,6 +686,8 @@
 
 	/**
 	 * Browser language mapping for 'auto' language selection
+	 * @todo this should be outsourced into the translation file
+	 * so we wouldn't provide a language which we can't support
 	 * @global array $g_language_auto_map
 	 */
 	$g_language_auto_map = array(
@@ -741,39 +746,45 @@
 
 	/**
 	 * browser window title
+	 * @deprecated use $config['window_title'] instead
 	 * @global string $g_window_title
 	 */
-	$g_window_title			= 'MantisBT';
+	$g_window_title	=& $g_config['window_title'];
 
 	/**
 	 * title at top of html page (empty by default, since there is a logo now)
+	 * @deprecated use $config['page_title'] instead
 	 * @global string $g_page_title
 	 */
-	$g_page_title			= '';
+	$g_page_title		=& $g_config['page_title'];
 
 	/**
 	 * Check for admin directory, database upgrades, etc.
+	 * @deprecated use $config['page_title'] instead
 	 * @global int $g_admin_checks
 	 */
-	$g_admin_checks			= ON;
+	$g_admin_checks =& $g_config['admin_checks'];
 
 	/**
 	 * Favicon image
+	 * @deprecated
 	 * @global string $g_favicon_image
 	 */
-	$g_favicon_image		= 'images/favicon.ico';
+	$g_favicon_image =& $g_config['favicon_icon'];
 
 	/**
 	 * Logo
+	 * @deprecated
 	 * @global string $g_logo_image
 	 */
-	$g_logo_image			= 'images/mantis_logo.gif';
+	$g_logo_image			=& $g_config['logo'];
 
 	/**
 	 * Logo URL link
+	 * @deprecated
 	 * @global string $g_logo_url
 	 */
-	$g_logo_url				= '%default_home_page%';
+	$g_logo_url				=& $g_config['logo_url'];
 
 	/**
 	 * Re-authentication required for admin areas
@@ -3354,19 +3365,6 @@
 	 * @global int $g_tag_edit_own_threshold
 	 */
 	$g_tag_edit_own_threshold = REPORTER;
-
-	/*****************
-	 *  Templateing  *
-	 * @todo this section needs to be documented
-	 *****************/
-
-	$g_config_template = array(
-		'smarty_dir'   => 'public/external/smarty/libs/',
-		'template_dir' => 'public/templates/default/',
-		'compile_dir'  => 'public/compiled/',
-		'css_dir'      => 'public/css/',
-		'jquery_dir'   => 'public/external/jquery/'
-	);
 
 	/*****************
 	 * Time tracking *

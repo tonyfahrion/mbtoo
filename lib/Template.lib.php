@@ -32,12 +32,15 @@ require_once('SmartyFunctions.lib.php');
  */
 class Template extends Smarty {
 
+	private $c_config;
+
 	public function __construct(){
 		parent::__construct();
 
-		global $g_config_template;
-		$this->template_dir = $g_config_template['template_dir'];
-		$this->compile_dir  = $g_config_template[ 'compile_dir'];
+		global $g_config;
+		$this->c_config =& $g_config;
+		$this->template_dir =& $this->c_config['template']['dir_template'];
+		$this->compile_dir  =& $this->c_config['template']['dir_compile'];
 
 		# we need compile_id to improve performance for multi-language support
 		$this->compile_id   = lang_get_current();
@@ -52,11 +55,12 @@ class Template extends Smarty {
 
 		# now let's register our functions
 		$t_lang = array('SmartyFunctions', 'compiler_lang');
-		$this->register_compiler_function( 'lang', $t_lang );
+		$this->register_compiler_function( 'tr', $t_lang );
 	}
 
 	public function mantis_enable_html_header() {
-		$this->assign_by_ref( 'charset', lang_get('charset') );
+		$this->assign( 'mantis_show_html_wrapper', true );
+
 		global $g_use_javascript;
 		$this->assign_by_ref( 'mantis_enable_js', $g_use_javascript );
 		global $g_css_include_file;
@@ -66,11 +70,17 @@ class Template extends Smarty {
 		if( $g_rss_feed_url !== null ) {
 			$this->assign_by_ref( 'mantis_rss', $g_rss_feed_url );
 		}
+		$this->assign_by_ref( 'mantis_window_title', $this->c_config['window_title'] );
 	}
 
 	public function mantis_enable_html_body_head() {
-		global $g_page_title;
-		$this->assign_by_ref( 'mantis_window_title', $g_page_title );
+
+		$this->assign( 'mantis_show_body_head', true );
+		$this->assign_by_ref( 'mantis_logo', $this->c_config['logo'] );
+	}
+
+	public function mantis_set_module($p_page) {
+		$this->assign('mantis_module', $p_page);
 	}
 	
 }

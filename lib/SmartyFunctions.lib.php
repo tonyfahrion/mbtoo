@@ -30,8 +30,7 @@ class SmartyFunctions {
   
 	public static function compiler_lang( &$p_tag_args, &$p_smarty) {
 		$t_tag = trim( $p_tag_args );
-
-		echo ' echo \''.lang_get($t_tag).'\';';
+		return ' echo \''.lang_get($t_tag).'\';';
 	}
 
 }

@@ -78,6 +78,15 @@
 		$t_config_inc_found = true;
 	}
 
+	/**
+	 *  @todo may be this could be done via .htaccess
+	 */
+	$t_include_path = ini_get( 'include_path' );
+	$t_include_path = $g_config_template['smarty_dir'].':'.implode( ':', $g_fs_paths ).':'.$t_include_path;
+
+	ini_set( 'include_path', $t_include_path );
+	unset( $t_include_path );
+
 	# Attempt to find the location of the core files.
 	$t_core_path = dirname(__FILE__).DIRECTORY_SEPARATOR.'core'.DIRECTORY_SEPARATOR;
 	if (isset($GLOBALS['g_core_path']) && !isset( $HTTP_GET_VARS['g_core_path'] ) && !isset( $HTTP_POST_VARS['g_core_path'] ) && !isset( $HTTP_COOKIE_VARS['g_core_path'] ) ) {
@@ -247,6 +256,24 @@
 	if ( !isset( $g_bypass_headers ) && !headers_sent() ) {
 		header( 'Content-type: text/html;charset=' . lang_get( 'charset' ) );
 	}
+
+	# okay, let's init our template-system (an extended smarty-object)
+	require_once('Template.lib.php');
+	$g_template = new Template();
+
+	/**
+	 * We will activate html-headers on default for now.
+	 * @todo decide to send headers depending if they are requested or needed
+	 *
+	 * This is in preperation for simple AJAX requests and will need additional attention later on.
+	 */
+	$g_template->mantis_enable_html_header();
+	$g_template->mantis_enable_html_body_head();
+
+	/**
+	 * @todo this has to be at the end of the whole process, but for migration we need it here!
+	 */
+	$g_template->display('index.tpl');
 
 	// every page displays project dropdown box, so cache project information very early
 	if ( db_is_connected() ) {

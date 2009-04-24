@@ -18,6 +18,12 @@ plugins/*
 *.swp
 *.bak
 .project
+nbproject
+.directory
 
 # IIS7 
 web.config
+
+# external frameworks and dynamic generated content
+public/external/*
+public/compiled/*

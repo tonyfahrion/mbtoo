@@ -108,11 +108,11 @@ function html_robots_noindex() {
  * @return null
  */
 function html_rss_link() {
-	global $g_rss_feed_url;
+	/*global $g_rss_feed_url;
 
 	if( $g_rss_feed_url !== null ) {
 		echo '<link rel="alternate" type="application/rss+xml" title="RSS" href="', $g_rss_feed_url, '" />';
-	}
+	}*/
 }
 
 /**
@@ -253,36 +253,45 @@ function html_page_bottom1a( $p_file = null ) {
 
 /**
  * (1) Print the document type and the opening <html> tag
+ * @deprecated we switched to smarty instead
  * @return null
  */
 function html_begin() {
-	echo '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">', "\n";
-	echo '<html>', "\n";
+	/*echo '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">', "\n";
+	echo '<html>', "\n";*/
 }
 
 /**
  * (2) Begin the <head> section
+ * @deprecated we switched to smarty instead
  * @return null
  */
 function html_head_begin() {
-	echo '<head>', "\n";
+	//echo '<head>', "\n";
 }
 
 /**
  * (3) Print the content-type
+ * @deprecated we switched to smarty instead
  * @return null
  */
 function html_content_type() {
-	echo "\t", '<meta http-equiv="Content-type" content="text/html;charset=', lang_get( 'charset' ), '" />', "\n";
+	//echo "\t", '<meta http-equiv="Content-type" content="text/html;charset=', lang_get( 'charset' ), '" />', "\n";
 }
 
 /**
  * (4) Print the window title
+ * @deprecated we switched to smarty instead
+ * @todo this call should be ported to our template-call
+ * \code
+ *  $g_template->assign('mantis_page_title_section', $t_page_title);
+ * \endcode
+ *
  * @param string $p_page_title window title
  * @return null
  */
 function html_title( $p_page_title = null ) {
-	$t_title = config_get( 'window_title' );
+	/*$t_title = config_get( 'window_title' );
 	echo "\t", '<title>';
 	if( 0 == strlen( $p_page_title ) ) {
 		echo string_display( $t_title );
@@ -293,21 +302,22 @@ function html_title( $p_page_title = null ) {
 			echo $p_page_title . ' - ' . string_display( $t_title );
 		}
 	}
-	echo '</title>', "\n";
+	echo '</title>', "\n";*/
 }
 
 /**
  * (5) Print the link to include the css file
+ * @deprecated we switched to smarty instead
  * @return null
  */
 function html_css() {
-	$t_css_url = config_get( 'css_include_file' );
+	/*$t_css_url = config_get( 'css_include_file' );
 	echo "\t", '<link rel="stylesheet" type="text/css" href="', helper_mantis_url( $t_css_url ), '" />', "\n";
 
 	# fix for NS 4.x css
 	echo "\t", '<script type="text/javascript" language="JavaScript"><!--', "\n";
 	echo "\t\t", 'if(document.layers) {document.write("<style>td{padding:0px;}<\/style>")}', "\n";
-	echo "\t", '// --></script>', "\n";
+	echo "\t", '// --></script>', "\n";*/
 }
 
 /**
@@ -317,6 +327,7 @@ function html_css() {
  * If we have handled any errors on this page and the 'stop_on_errors' config
  *  option is turned on, return false and don't redirect.
  *
+ * @todo we switched to smarty instead - so provide another API to get "delayed" redirects
  * @param string $p_url The page to redirect: has to be a relative path
  * @param integer $p_time seconds to wait for before redirecting
  * @param boolean $p_sanitize apply string_sanitize_url to passed url
@@ -338,17 +349,25 @@ function html_meta_redirect( $p_url, $p_time = null, $p_sanitize = true ) {
 		$t_url .= $p_url;
 	}
 
-	echo "\t<meta http-equiv=\"Refresh\" content=\"$p_time;URL=$t_url\" />\n";
+	global $g_template;
+	$t_redirect = array(
+		'time' => $p_time,
+		'url'  => $t_url
+	);
+	$g_template->assign('mantis_redirect', $t_redirect);
+
+	//echo "\t<meta http-equiv=\"Refresh\" content=\"$p_time;URL=$t_url\" />\n";
 
 	return true;
 }
 
 /**
  * (6a) Javascript...
+ * @deprecated we switched to smarty instead
  * @return null
  */
 function html_head_javascript() {
-	if( ON == config_get( 'use_javascript' ) ) {
+	/*if( ON == config_get( 'use_javascript' ) ) {
 		echo "\t", '<script type="text/javascript" language="JavaScript" src="', helper_mantis_url( 'javascript/common.js' ), '">';
 		echo '</script>', "\n";
 		echo "\t", '<script type="text/JavaScript" src="', helper_mantis_url( 'javascript/ajax.js' ), '">';
@@ -360,38 +379,41 @@ function html_head_javascript() {
 			echo '<script type="text/javascript" src="', helper_mantis_url( 'javascript/projax/prototype.js' ), '"></script>';
 			echo '<script type="text/javascript" src="', helper_mantis_url( 'javascript/projax/scriptaculous.js' ), '"></script>';
 		}
-	}
+	}*/
 }
 
 /**
  * (7) End the <head> section
+ * @deprecated we switched to smarty instead
  * @return null
  */
 function html_head_end() {
 	event_signal( 'EVENT_LAYOUT_RESOURCES' );
 
-	echo '</head>', "\n";
+	//echo '</head>', "\n";
 }
 
 /**
  * (8) Begin the <body> section
+ * @deprecated we switched to smarty instead
  * @return null
  */
 function html_body_begin() {
-	echo '<body>', "\n";
+	//echo '<body>', "\n";
 
 	event_signal( 'EVENT_LAYOUT_BODY_BEGIN' );
 }
 
 /**
  * (9) Print the title displayed at the top of the page
- * @return null
+ * @deprecated we switched to smarty instead
+ * @return void
  */
 function html_header() {
-	$t_title = config_get( 'page_title' );
+	/*$t_title = config_get( 'page_title' );
 	if( !is_blank( $t_title ) ) {
 		echo '<div class="center"><span class="pagetitle">', string_display( $t_title ), '</span></div>', "\n";
-	}
+	}*/
 }
 
 /**

@@ -410,8 +410,15 @@ function helper_show_queries() {
 	return ON == config_get( 'show_queries_count' ) && auth_is_user_authenticated() && access_has_global_level( config_get( 'show_queries_threshold' ) );
 }
 
-# Return a URL relative to the web root, compatible with other applications
+/**
+ * Return a URL relative to the web root, compatible with other applications
+ *
+ * @param string $p_url
+ * @return string
+ */
 function helper_mantis_url( $p_url ) {
+	# is_blank() shouldn't be needed!
+	# We have to be sure that every thing which comes in will be cleaned!
 	if( is_blank( $p_url ) ) {
 		return $p_url;
 	}

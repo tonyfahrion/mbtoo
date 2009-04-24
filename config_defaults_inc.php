@@ -76,6 +76,11 @@
 	 */
 	$g_db_type				= 'mysql';
 
+	/**
+	 * @todo this needs to be documented
+	 */
+	$g_debug          =   false;
+
 	/**************************
 	 * MantisBT Path Settings *
 	 **************************/
@@ -181,6 +186,12 @@
 	 * @global string $g_core_path
 	 */
 	$g_core_path			= $g_absolute_path . 'core' . DIRECTORY_SEPARATOR;
+
+	$g_api_path       =& $g_absolute_path;
+	$g_fs_paths = array(
+		'core' => &$g_core_path,
+		'lib'  => $g_api_path.'lib'.DIRECTORY_SEPARATOR
+	);
 
 	/**
 	 * absolute path to class files.  Requires trailing / or \
@@ -3343,6 +3354,19 @@
 	 * @global int $g_tag_edit_own_threshold
 	 */
 	$g_tag_edit_own_threshold = REPORTER;
+
+	/*****************
+	 *  Templateing  *
+	 * @todo this section needs to be documented
+	 *****************/
+
+	$g_config_template = array(
+		'smarty_dir'   => 'public/external/smarty/libs/',
+		'template_dir' => 'public/templates/default/',
+		'compile_dir'  => 'public/compiled/',
+		'css_dir'      => 'public/css/',
+		'jquery_dir'   => 'public/external/jquery/'
+	);
 
 	/*****************
 	 * Time tracking *

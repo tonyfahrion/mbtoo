@@ -23,6 +23,7 @@
  */
 
 require_once('Smarty.class.php');
+require_once('SmartyFunctions.lib.php');
 
 /**
  * Description of template_api
@@ -41,31 +42,35 @@ class Template extends Smarty {
 		# we need compile_id to improve performance for multi-language support
 		$this->compile_id   = lang_get_current();
 
-		if ( isset($g_debug) && $g_debug === true ) {
+		global $g_debug;
+		if ( $g_debug === true ) {
 			$this->force_compile   = true;
 			$this->debugging_ctrl  = 'URL';
 			$this->caching         = 0;
 			$this->error_reporting = true;
 		}
+
+		# now let's register our functions
+		$t_lang = array('SmartyFunctions', 'compiler_lang');
+		$this->register_compiler_function( 'lang', $t_lang );
 	}
 
 	public function mantis_enable_html_header() {
 		$this->assign_by_ref( 'charset', lang_get('charset') );
 		global $g_use_javascript;
-		$this->assign_by_ref( 'enable_js', $g_use_javascript );
+		$this->assign_by_ref( 'mantis_enable_js', $g_use_javascript );
 		global $g_css_include_file;
 		$this->assign_by_ref( 'css_files', $g_css_include_file );
 
-		# set our window-title:
-		$t_title = config_get( 'window_title' );
-		if ( !empty( $p_page_title ) ) {
-			$t_title = ( empty( $t_title ) )
-								 ? $p_page_title
-								 : $p_page_title.' - '.string_display( $t_title );
-		} else {
-			$t_title = string_display( $t_title );
+		global $g_rss_feed_url;
+		if( $g_rss_feed_url !== null ) {
+			$this->assign_by_ref( 'mantis_rss', $g_rss_feed_url );
 		}
-		$g_template->assign( 'window_title', $t_title );
+	}
+
+	public function mantis_enable_html_body_head() {
+		global $g_page_title;
+		$this->assign_by_ref( 'mantis_window_title', $g_page_title );
 	}
 	
 }

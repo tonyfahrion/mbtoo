@@ -45,6 +45,10 @@
 
 	$t_bug = bug_prepare_display( bug_get( $f_bug_id, true ) );
 
+	/**
+	 * Tony Wolf - 2009-04-24
+	 * @TODO please declare $g_project_override out-side of if, so it would be known outside the if-scope!
+	 */
 	if( $t_bug->project_id != helper_get_current_project() ) {
 		# in case the current project is not the same project of the bug we are viewing...
 		# ... override the current project. This to avoid problems with categories and handlers lists etc.

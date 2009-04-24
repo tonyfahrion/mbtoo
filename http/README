@@ -1,0 +1,15 @@
+
+Structure
+====================
+  => templates/
+    Here we have our html-pages. There has to be a subfolder with the template-name.
+    Please use *default* as reference.
+  => css/
+    Here we have our CSS stylesheets - also in a subfolder.
+    Please use *default* as reference.
+  => compiled/
+    We're using smarty to generate our HTTP-output and smarty needs a directory where it is able to store the compiled templates.
+    So, this would smartys compiled-dir.
+  => js/
+    Okay, our javascript-directory. But only for our selfscripted js-files. jQuery(UI) would stored in external!
+

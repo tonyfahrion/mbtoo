@@ -1,0 +1,64 @@
+
+************ Tony Wolf ***********
+  last modified: 2009-04-24
+
+introduce OOP
+========================
+ We realy should code in OOP! This reduces a lot of code and enables use to implement new features in a simple way!
+
+ So let's start with it. I already have an session and DBMS lib. (Also others, but theses two are the most needed ones)
+
+Backup
+========================
+ Data export/import to/from XML
+   => without user-passwords (this should realy avoided for security)
+   => make the export modular (export only cases, comments and/or users and so on)
+
+Caching with backends
+========================
+ Support various caching-backends, to let the user decide which he needs and/or which is possible to use form him.
+   => memcache
+   => filesystem (I already have a simple fs-caching)
+   => it should be selfmanaged to avoid outdates caches
+   => implement it as an thin-layer (between "model" and "control" or better as part of the "first layer of model")
+
+prototypejs => jquery
+=========================
+ Switch from prototypeJS to jQuery with jQeryUI (for datepicker and co)
+   => http://jquery.com
+   => http://jqueryui.com
+
+introduce smarty
+=========================
+ Use smarty as template-system to seperate HTML from API-code
+   => http://smarty.net
+
+write a MTA-plugin
+=========================
+ There should be various ways to connect mantis with an existing email-infrastructure!
+   => using a POP3 account (via cron-job) >> mantis looks every X minutes for new messages and will parse them
+   => using an IMAP4 account (via cron-job) ...
+   => using a simple MTA-connector (that depends noch on us, we only have to write a simple parser script)
+     >> here the MTA will send the mail to our script and we will parse it...
+     >> no cron is needed and there would be no delay!
+     >> also no "connect every time" overhead
+
+clean URLs
+=========================
+ Make it easily possible to use ModRewrite for short and clean URLs
+   => $host/#02345 (this to access the bug 02345)
+   => $host/changelog $host/main $host/buglist $host/me ... (to access the appropriated page)
+   => $host/projectname/ (to access the project with projectname - blanks are replaced by underscores "_")
+   => $host/rss/filterstring (to access different rss-feeds)
+
+project-selector - ajaxified
+=========================
+ Develop something like the folder-selector-bar in kde4.
+ Only available if JS is enabled and this feature too.
+
+javascript preferences
+=========================
+ Every user should be able to control which JS (if any) functions he likes to use.
+   => make some "static-content" replacements in JS and enable the user to activate them seperately
+     - like "I like to have the AJAX-project-selector - but not the auto-copletion while I'm typing a search request"
+   => make it possible for the user to enable effects like dialogs (instead of page-reload), smooth content fades and so on

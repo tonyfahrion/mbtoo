@@ -263,8 +263,8 @@
 	}
 
 	# okay, let's init our template-system (an extended smarty-object)
-	require_once('Template.lib.php');
-	$g_template = new Template();
+	require_once('Output.lib.php');
+	$g_output = new Output();
 
 	/**
 	 * We will activate html-headers on default for now.
@@ -272,18 +272,18 @@
 	 *
 	 * This is in preperation for simple AJAX requests and will need additional attention later on.
 	 */
-	$g_template->mantis_enable_html_header();
-	$g_template->mantis_enable_html_body_head();
+	$g_output->mantis_enable_html_header();
+	$g_output->mantis_enable_html_body_head();
 
 	/**
 	 * @todo only use this until we don't have one
 	 */
-	$g_template->mantis_set_module('login');
+	$g_output->mantis_set_module('login');
 
 	/**
 	 * @todo this has to be at the end of the whole process, but for migration we need it here!
 	 */
-	$g_template->display('index.tpl');
+	$g_output->display('index.tpl');
 
 	// every page displays project dropdown box, so cache project information very early
 	if ( db_is_connected() ) {

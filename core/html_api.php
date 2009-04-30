@@ -355,12 +355,12 @@ function html_meta_redirect( $p_url, $p_time = null, $p_sanitize = true ) {
 		$t_url .= $p_url;
 	}
 
-	global $g_template;
+	global $g_output;
 	$t_redirect = array(
 		'time' => $p_time,
 		'url'  => $t_url
 	);
-	$g_template->assign('mantis_redirect', $t_redirect);
+	$g_output->assign('mantis_redirect', $t_redirect);
 
 	//echo "\t<meta http-equiv=\"Refresh\" content=\"$p_time;URL=$t_url\" />\n";
 

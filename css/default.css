@@ -110,9 +110,11 @@ td.news-heading-public	{ background-color: #c8c8e8; color: #000000; text-align: 
 td.news-heading-private	{ background-color: #d8d8d8;       color: #000000; text-align: left; border-bottom: 1px solid #000000; }
 td.news-body			{ background-color: #ffffff;         color: #000000; padding: 16px; }
 
-img						{}
+img	{
+	border:0;
+}
 img.icon				{ width: 11px; height: 11px; }
-img.delete-icon			{ position: relative; top: 5px; border: 0; }
+img.delete-icon			{ position: relative; top: 5px; }
 
 div						{ padding: 3px; }
 div.menu				{ background-color: #e8e8e8; color: #000000; text-align: center; width: 100%; padding: 1px; }

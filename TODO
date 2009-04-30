@@ -1,6 +1,6 @@
 
 ************ Tony Wolf ***********
-  last modified: 2009-04-24
+  last modified: 2009-04-30
 
 introduce OOP
 ========================
@@ -72,6 +72,14 @@ improve translation handling
      >> generate the list dynamicaly while analysing available translations
 
 first steps install assistant
-========================
+=========================
  Provide an assistant which help you to set up your first project and so on...
+
+template-based mails
+=========================
+ Use smarty for email-text.
+   => give to user the possibility to use his own mail-text-template
+     >> but keep the origin! So we're able to provide a button like "restore to origin"
+     >> may be we would provide a per user mail-template - this could be realy cool! :)
+     >> write a simple mail-template admin interface
 

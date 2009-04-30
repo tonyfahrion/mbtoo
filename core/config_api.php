@@ -253,7 +253,7 @@ function config_get_access( $p_option, $p_user = null, $p_project = null ) {
 function config_is_enabled( $p_key ) {
 	$t_value   = config_get( $p_key );
 	$t_enables =    array( ON, true );
-	return !empty($t_value) && ( is_string($t_value) || in_array($t_value, $t_enables) );
+	return !is_blank($t_value) && ( is_string($t_value) || in_array($t_value, $t_enables) );
 }
 
 # ------------------

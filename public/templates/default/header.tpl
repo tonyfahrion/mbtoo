@@ -32,11 +32,60 @@
 		<script type="text/javascript" src="javascript/projax/prototype.js"></script>
 		<script type="text/javascript" src="javascript/projax/scriptaculous.js"></script>
 		{/if}
-		{if isset( $mantis_rss ) }
-		<link rel="alternate" type="application/rss+xml" title="RSS" href="{$mantis_rss}" />
+		{if config_is_enabled( 'rss_feed_url' ) }
+		<link rel="alternate" type="application/rss+xml" title="RSS" href="{cv rss_feed_url}" />
 		{/if}
 		{if config_is_enabled( 'window_title' ) }
 		<title>{cvs window_title}{if config_is_enabled( 'window_title_section' ) } - {$mantis_window_title_section}{/if}</title>
 		{/if}
 	</head>
 	<body>
+		{*
+		$t_page = config_get( 'top_include_page' );
+	$t_logo_image = config_get( 'logo_image' );
+	$t_logo_url = config_get( 'logo_url' );
+
+	if( is_blank( $t_logo_image ) ) {
+		$t_show_logo = false;
+	} else {
+		$t_show_logo = true;
+		if( is_blank( $t_logo_url ) ) {
+			$t_show_url = false;
+		} else {
+			$t_show_url = true;
+		}
+	}
+
+	if( !is_blank( $t_page ) && file_exists( $t_page ) && !is_dir( $t_page ) ) {
+		include( $t_page );
+	} else if( $t_show_logo ) {
+		if( is_page_name( 'login_page' ) ) {
+			$t_align = 'center';
+		} else {
+			$t_align = 'left';
+		}
+
+		echo '<div align="', $t_align, '">';
+		if( $t_show_url ) {
+			echo '<a href="', config_get( 'logo_url' ), '">';
+		}
+		echo '<img border="0" alt="Mantis Bug Tracker" src="' . helper_mantis_url( config_get( 'logo_image' ) ) . '" />';
+		if( $t_show_url ) {
+			echo '</a>';
+		}
+		echo '</div>';
+	}
+
+		*}
+		{if isset( $top_include_page ) }
+		  {include file="mantis:$top_include_page"}
+		{elseif config_is_enabled( 'logo_image' ) }
+		<div align="{if $mantis_module == 'login'}center{else}left{/if}">
+			{if config_is_enabled( 'logo_url' ) }
+			<a href="{cv logo_url}"><img src="{url logo_image}" /></a>
+			{else}
+			<img src="{url logo_image}" />
+			{/if}
+		</div>
+		{/if}
+		{es EVENT_LAYOUT_PAGE_HEADER}

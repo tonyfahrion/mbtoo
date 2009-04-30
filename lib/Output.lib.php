@@ -60,7 +60,9 @@ class Output extends Smarty {
 		$t_compiler_functions = array(
 			'compiler_lang' => 'tr',
 			'config_value'  => 'cv',
-			'config_value_static' => 'cvs'
+			'config_value_static' => 'cvs',
+			'event_signal' => 'es',
+			'helper_url' => 'url'
 		);
 		foreach( $t_compiler_functions as $method => $alias ) {
 			$t_help = array('SmartyFunctions', $method);
@@ -102,9 +104,9 @@ class Output extends Smarty {
 			return false;
 		}
 
-		$t_keys = $p_object->get_keys();
+		$t_keys = $p_object->get_input_keys();
 		foreach ( $t_keys as $t_key_n_function ) {
-			$this->plugins[$t_key_n_function['key']][] = array('object' => &$p_object, 'function' => $t_key_n_function['function']);
+			$this->plugins[$t_key_n_function['key']][] = array('object' => &$p_object, 'function' => $t_key_n_function['function'], 'plugin_name' => $p_name);
 		}
 		$this->plugins_enabled = true;
 		return true;
@@ -137,7 +139,6 @@ class Output extends Smarty {
 		if( $g_rss_feed_url !== null ) {
 			$this->assign_by_ref( 'mantis_rss', $g_rss_feed_url );
 		}
-		$this->assign_by_ref( 'mantis_window_title', $this->config['window_title'] );
 	}
 
 	public function mantis_enable_html_body_head() {

@@ -30,7 +30,7 @@ class SmartyFunctions {
   
 	public static function compiler_lang( &$p_tag_args, &$p_smarty ) {
 		$t_tag = trim( $p_tag_args );
-		return 'echo \''.lang_get($t_tag).'\';';
+		return 'echo \''.lang_get( $t_tag ).'\';';
 	}
 
 	public static function config_value( &$p_tag_args, &$p_smarty ) {
@@ -39,7 +39,26 @@ class SmartyFunctions {
 
 	public static function config_value_static( &$p_tag_args, &$p_smarty ) {
 		$t_value = config_get( $p_tag_args );
-		return 'echo \''.str_replace( '\'', '\\\'', $t_value).'\';';
+		return 'echo \''.str_replace( '\'', '\\\'', $t_value ).'\';';
+	}
+
+	public static function helper_url( &$p_tag_args, &$p_smarty ) {
+		return 'echo helper_mantis_url( config_get(\''.str_replace( '\'', '\\\'', $p_tag_args ).'\') );';
+	}
+
+	/**
+	 * This is only a legacy template2event function - don't use it!
+	 * @todo this shouldn't be used unless we will provide a legacy support for plugins - 2009-04-30 Tony Wolf
+	 * @param string $p_tag_args
+	 * @param object $p_smarty
+	 * @return string
+	 */
+	public static function event_signal( &$p_tag_args, &$p_smarty ) {
+		ob_start();
+		event_signal( $p_tag_args );
+		$t_value = ob_get_contents();
+		ob_end_clean();
+		return 'echo \''.str_replace( '\'', '\\\'', $t_value ).'\';';
 	}
 
 }

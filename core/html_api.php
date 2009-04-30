@@ -424,9 +424,10 @@ function html_header() {
 
 /**
  * (10) Print a user-defined banner at the top of the page if there is one.
+ * @deprecated we switched to smarty instead
  * @return null
  */
-function html_top_banner() {
+function html_top_banner() {/*
 	$t_page = config_get( 'top_include_page' );
 	$t_logo_image = config_get( 'logo_image' );
 	$t_logo_url = config_get( 'logo_url' );
@@ -455,14 +456,14 @@ function html_top_banner() {
 		if( $t_show_url ) {
 			echo '<a href="', config_get( 'logo_url' ), '">';
 		}
-		echo '<img border="0" alt="Mantis Bug Tracker" src="' . helper_mantis_url( config_get( 'logo_image' ) ) . '" />';
+		echo '<img alt="Mantis Bug Tracker" src="' . helper_mantis_url( config_get( 'logo_image' ) ) . '" />';
 		if( $t_show_url ) {
 			echo '</a>';
 		}
 		echo '</div>';
 	}
 
-	event_signal( 'EVENT_LAYOUT_PAGE_HEADER' );
+	event_signal( 'EVENT_LAYOUT_PAGE_HEADER' );*/
 }
 
 /**

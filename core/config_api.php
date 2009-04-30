@@ -245,6 +245,17 @@ function config_get_access( $p_option, $p_user = null, $p_project = null ) {
 	return $t_found ? $t_access : ADMINISTRATOR;
 }
 
+/**
+ *
+ * @param string $p_key
+ * @return bool
+ */
+function config_is_enabled( $p_key ) {
+	$t_value   = config_get( $p_key );
+	$t_enables =    array( ON, true );
+	return !empty($t_value) && ( is_string($t_value) || in_array($t_value, $t_enables) );
+}
+
 # ------------------
 # Returns true if the specified config option exists (ie. a
 #  value or default can be found), false otherwise

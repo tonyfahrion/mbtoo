@@ -57,8 +57,16 @@ class Output extends Smarty {
 		}
 
 		# now let's register our functions
-		$t_lang = array('SmartyFunctions', 'compiler_lang');
-		$this->register_compiler_function( 'tr', $t_lang );
+		$t_compiler_functions = array(
+			'compiler_lang' => 'tr',
+			'config_value'  => 'cv',
+			'config_value_static' => 'cvs'
+		);
+		foreach( $t_compiler_functions as $method => $alias ) {
+			$t_help = array('SmartyFunctions', $method);
+			$this->register_compiler_function( $alias, $t_help );
+		}
+		unset( $t_compiler_functions );
 
 		$this->plugins = array();
 		$this->plugins_enabled = false;
@@ -122,9 +130,6 @@ class Output extends Smarty {
 
 	public function mantis_enable_html_header() {
 		$this->assign( 'mantis_show_html_wrapper', true );
-
-		global $g_use_javascript;
-		$this->assign_by_ref( 'mantis_enable_js', $g_use_javascript );
 		global $g_css_include_file;
 		$this->assign_by_ref( 'css_files', $g_css_include_file );
 

@@ -25,7 +25,7 @@
 		{if isset( $mantis_redirect ) }
 		<meta http-equiv="refresh" content="{$redirect.time};URL={$redirect.url}" />
 		{/if}
-		{if isset( $mantis_enable_js ) }
+		{if config_get( 'use_javascript' ) }
 
 		<script type="text/javascript" src="javascript/common.js"></script>
 		<script type="text/javascript" src="javascript/ajax.js"></script>
@@ -35,7 +35,8 @@
 		{if isset( $mantis_rss ) }
 		<link rel="alternate" type="application/rss+xml" title="RSS" href="{$mantis_rss}" />
 		{/if}
-
-		<title>{if !empty( $mantis_window_title ) }{$mantis_window_title}{if !empty( $mantis_window_title_section ) } - {$mantis_window_title_section}{/if}{/if}</title>
+		{if config_is_enabled( 'window_title' ) }
+		<title>{cvs window_title}{if config_is_enabled( 'window_title_section' ) } - {$mantis_window_title_section}{/if}</title>
+		{/if}
 	</head>
 	<body>

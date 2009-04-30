@@ -28,9 +28,18 @@
  */
 class SmartyFunctions {
   
-	public static function compiler_lang( &$p_tag_args, &$p_smarty) {
+	public static function compiler_lang( &$p_tag_args, &$p_smarty ) {
 		$t_tag = trim( $p_tag_args );
-		return ' echo \''.lang_get($t_tag).'\';';
+		return 'echo \''.lang_get($t_tag).'\';';
+	}
+
+	public static function config_value( &$p_tag_args, &$p_smarty ) {
+		return 'echo config_get(\''.$p_tag_args.'\');';
+	}
+
+	public static function config_value_static( &$p_tag_args, &$p_smarty ) {
+		$t_value = config_get( $p_tag_args );
+		return 'echo \''.str_replace( '\'', '\\\'', $t_value).'\';';
 	}
 
 }

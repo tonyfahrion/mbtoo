@@ -54,14 +54,6 @@ require_once( $t_core_dir . 'email_queue_api.php' );
  * requires relationship_api
  */
 require_once( $t_core_dir . 'relationship_api.php' );
-/**
- * requires disposable_api
- */
-require_once( $t_core_dir . 'disposable' . DIRECTORY_SEPARATOR . 'disposable.php' );
-/**
- * requires class.phpmailer.php
- */
-require_once( PHPMAILER_PATH . 'class.phpmailer.php' );
 
 # reusable object of class SMTP
 $g_phpMailer = null;
@@ -694,7 +686,7 @@ function email_store( $p_recipient, $p_subject, $p_message, $p_headers = null ) 
 	$t_email_data->metadata['priority'] = config_get( 'mail_priority' );
 
 	# Urgent = 1, Not Urgent = 5, Disable = 0
-	$t_email_data->metadata['charset'] = lang_get( 'charset', lang_get_current() );
+	$t_email_data->metadata['charset'] = 'utf-8';
 
 	$t_hostname = '';
 	$t_server = isset( $_SERVER ) ? $_SERVER : $HTTP_SERVER_VARS;
@@ -721,7 +713,7 @@ function email_send_all() {
 	$t_ids = email_queue_get_ids();
 
 	$t_emails_recipients_failed = array();
-	$t_start = microtime_float();
+	$t_start = microtime(true);
 	foreach( $t_ids as $t_id ) {
 		$t_email_data = email_queue_get( $t_id );
 
@@ -733,7 +725,7 @@ function email_send_all() {
 		# if unable to place the email in the email server queue, then the connection to the server is down,
 		# and hence no point to continue trying with the rest of the emails.
 		if( !email_send( $t_email_data ) ) {
-			if( microtime_float() - $t_start > 5 ) {
+			if( microtime(true) - $t_start > 5 ) {
 				break;
 			} else {
 				continue;
@@ -1093,14 +1085,14 @@ function email_format_bug_message( $p_visible_bug_data ) {
 
 	$t_message .= email_format_attribute( $p_visible_bug_data, 'email_summary' );
 
-	$t_message .= lang_get( 'email_description' ) . ": \n" . wordwrap( $p_visible_bug_data['email_description'] ) . "\n";
+	$t_message .= lang_get( 'email_description' ) . ": \n" . $p_visible_bug_data['email_description'] . "\n";
 
 	if ( !is_blank( $p_visible_bug_data['email_steps_to_reproduce'] ) ) {
-		$t_message .= "\n" . lang_get( 'email_steps_to_reproduce' ) . ": \n" . wordwrap( $p_visible_bug_data['email_steps_to_reproduce'] ) . "\n";
+		$t_message .= "\n" . lang_get( 'email_steps_to_reproduce' ) . ": \n" . $p_visible_bug_data['email_steps_to_reproduce'] . "\n";
 	}
 
 	if ( !is_blank( $p_visible_bug_data['email_additional_information'] ) ) {
-		$t_message .= "\n" . lang_get( 'email_additional_information' ) . ": \n" . wordwrap( $p_visible_bug_data['email_additional_information'] ) . "\n";
+		$t_message .= "\n" . lang_get( 'email_additional_information' ) . ": \n" . $p_visible_bug_data['email_additional_information'] . "\n";
 	}
 
 	if( isset( $p_visible_bug_data['relations'] ) ) {
@@ -1150,7 +1142,7 @@ function email_format_bug_message( $p_visible_bug_data ) {
 		$t_message .= $t_email_separator2 . " \n";
 		$t_message .= $t_string . " \n";
 		$t_message .= $t_email_separator2 . " \n";
-		$t_message .= wordwrap( $t_bugnote->note ) . " \n\n";
+		$t_message .= $t_bugnote->note . " \n\n";
 	}
 
 	# format history

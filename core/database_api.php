@@ -27,14 +27,8 @@
  * @link http://www.mantisbt.org
  *
  * @uses config_api.php
- * @uses gpc_api.php
  */
 $t_core_dir = dirname( __FILE__ ) . DIRECTORY_SEPARATOR;
-
-/**
- * requires gpc_api
- */
-require_once( $t_core_dir . 'gpc_api.php' );
 
 # Do not explicitly include $t_core_dir to allow using system ADODB by including
 # it in include path and removing the one distributed with MantisBT (see #7907).
@@ -56,7 +50,7 @@ $g_db_connected = false;
  * Store whether to log queries ( used for show_queries_count/query list)
  * @global bool $g_db_log_queries
  	 */
-$g_db_log_queries = config_get_global( 'show_queries_count' );
+$g_db_log_queries = config_get_global( 'show_queries_list' );
 
 /**
  * set adodb fetch mode
@@ -108,9 +102,7 @@ function db_connect( $p_dsn, $p_hostname = null, $p_username = null, $p_password
 		if( db_is_mysql() ) {
 			/** @todo Is there a way to translate any charset name to MySQL format? e.g. remote the dashes? */
 			/** @todo Is this needed for other databases? */
-			if( strtolower( lang_get( 'charset' ) ) === 'utf-8' ) {
-				db_query_bound( 'SET NAMES UTF8' );
-			}
+			db_query_bound( 'SET NAMES UTF8' );
 		} else if( db_is_db2() && $p_db_schema !== null && !is_blank( $p_db_schema ) ) {
 			$t_result2 = db_query_bound( 'set schema ' . $p_db_schema );
 			if( $t_result2 === false ) {
@@ -256,7 +248,7 @@ function db_query( $p_query, $p_limit = -1, $p_offset = -1 ) {
 	global $g_queries_array, $g_db, $g_db_log_queries;
 
 	if( ON == $g_db_log_queries ) {
-		$t_start = microtime_float();
+		$t_start = microtime(true);
 
 		$t_backtrace = debug_backtrace();
 		$t_caller = basename( $t_backtrace[0]['file'] );
@@ -278,9 +270,11 @@ function db_query( $p_query, $p_limit = -1, $p_offset = -1 ) {
 	}
 
 	if( ON == $g_db_log_queries ) {
-		$t_elapsed = number_format( microtime_float() - $t_start, 4 );
+		$t_elapsed = number_format( microtime(true) - $t_start, 4 );
 
 		array_push( $g_queries_array, array( $p_query, $t_elapsed, $t_caller ) );
+	} else {
+		array_push( $g_queries_array, 1 );
 	}
 
 	if( !$t_result ) {
@@ -310,7 +304,7 @@ function db_query_bound( $p_query, $arr_parms = null, $p_limit = -1, $p_offset =
 	if( ON == $g_db_log_queries ) {
 		$t_db_type = config_get_global( 'db_type' );
 
-		$t_start = microtime_float();
+		$t_start = microtime(true);
 
 		$t_backtrace = debug_backtrace();
 		$t_caller = basename( $t_backtrace[0]['file'] );
@@ -341,7 +335,7 @@ function db_query_bound( $p_query, $arr_parms = null, $p_limit = -1, $p_offset =
 	}
 
 	if( ON == $g_db_log_queries ) {
-		$t_elapsed = number_format( microtime_float() - $t_start, 4 );
+		$t_elapsed = number_format( microtime(true) - $t_start, 4 );
 
 		$lastoffset = 0;
 		$i = 1;
@@ -380,6 +374,8 @@ function db_query_bound( $p_query, $arr_parms = null, $p_limit = -1, $p_offset =
 		}
 
 		array_push( $g_queries_array, array( $p_query, $t_elapsed, $t_caller ) );
+	} else {
+		array_push( $g_queries_array, 1 );
 	}
 
 	# We can't reset the counter because we have queries being built

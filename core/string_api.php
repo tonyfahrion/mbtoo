@@ -417,15 +417,21 @@ function string_insert_hrefs( $p_string ) {
 
 	# Find any URL in a string and replace it by a clickable link
 	if ( is_null( $s_url_regex ) ) {
-		$t_url_chars = '(?:%[[:digit:]A-Fa-f]{2}|[-_.!~*\';\/?%^\\\\:@&={\|}+$#\(\),\[\][:alnum:]])';
-		$t_url_chars2 = '(?:%[[:digit:]A-Fa-f]{2}|[-_.!~*\';\/?%^\\\\:@&={\|}+$#,[:alnum:]])';
-		$t_url_chars_in_brackets = '(?:%[[:digit:]A-Fa-f]{2}|[-_.!~*\';\/?%^\\\\:@&={\|}+$#\(\),[:alnum:]])';
-		$t_url_chars_in_parens = '(?:%[[:digit:]A-Fa-f]{2}|[-_.!~*\';\/?%^\\\\:@&={\|}+$#\[\],[:alnum:]])';
+		# %2A notation in url's
+		$t_url_hex = '%[[:digit:]A-Fa-f]{2}';
+	
+		# valid set of characters that may occur in url scheme. Note: - should be first (A-F != -AF).
+		$t_url_valid_chars = '-_.,!~*\';\/?%^\\\\:@&={\|}+$#[:alnum:]\pL';
+	
+		$t_url_chars = "(?:${t_url_hex}|[${t_url_valid_chars}\(\)\[\]])";
+		$t_url_chars2 = "(?:${t_url_hex}|[${t_url_valid_chars}])";
+		$t_url_chars_in_brackets = "(?:${t_url_hex}|[${t_url_valid_chars}\(\)])";
+		$t_url_chars_in_parens    = "(?:${t_url_hex}|[${t_url_valid_chars}\[\]])";
 
 		$t_url_part1 = "${t_url_chars}";
 		$t_url_part2 = "(?:\(${t_url_chars_in_parens}*\)|\[${t_url_chars_in_brackets}*\]|${t_url_chars2})";
 
-		$s_url_regex = "/(([[:alpha:]][-+.[:alnum:]]*):\/\/(${t_url_part1}*?${t_url_part2}+))/se";
+		$s_url_regex = "/(([[:alpha:]][-+.[:alnum:]]*):\/\/(${t_url_part1}*?${t_url_part2}+))/sue";
 	}
 
 	$p_string = preg_replace( $s_url_regex, "'<a href=\"'.rtrim('\\1','.').'\">\\1</a> [<a href=\"'.rtrim('\\1','.').'\" target=\"_blank\">^</a>]'", $p_string );
@@ -742,25 +748,18 @@ function string_get_field_name( $p_string ) {
 # --------------------
 # Calls htmlentities on the specified string, passing along
 # the current charset.
-function string_html_entities( $p_string, $p_charset = null ) {
-	if ( $p_charset === null ) {
-		$p_charset = lang_get( 'charset' );
-	}
-	return htmlentities( $p_string, ENT_COMPAT, $p_charset );
+function string_html_entities( $p_string ) {
+	return htmlentities( $p_string, ENT_COMPAT, 'utf-8' );
 }
 
 # --------------------
 # Calls htmlspecialchars on the specified string, passing along
 # the current charset, if the current PHP version supports it.
-function string_html_specialchars( $p_string, $p_charset = null ) {
-	if ( $p_charset === null ) {
-		$p_charset = lang_get( 'charset' );
-	}
-
+function string_html_specialchars( $p_string ) {
 	# achumakov: @ added to avoid warning output in unsupported codepages
 	# e.g. 8859-2, windows-1257, Korean, which are treated as 8859-1.
 	# This is VERY important for Eastern European, Baltic and Korean languages
-	return preg_replace( "/&amp;(#[0-9]+|[a-z]+);/i", "&$1;", @htmlspecialchars( $p_string, ENT_COMPAT, $p_charset ) );
+	return preg_replace( "/&amp;(#[0-9]+|[a-z]+);/i", "&$1;", @htmlspecialchars( $p_string, ENT_COMPAT, 'utf-8' ) );
 }
 
 # --------------------

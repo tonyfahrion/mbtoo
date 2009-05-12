@@ -276,7 +276,7 @@ function html_head_begin() {
  * @return null
  */
 function html_content_type() {
-	//echo "\t", '<meta http-equiv="Content-type" content="text/html;charset=', lang_get( 'charset' ), '" />', "\n";
+	//echo "\t", '<meta http-equiv="Content-type" content="text/html;charset=utf-8" />', "\n";
 }
 
 /**
@@ -561,7 +561,7 @@ function html_bottom_banner() {
  * @return null
  */
 function html_footer( $p_file ) {
-	global $g_timer, $g_queries_array, $g_request_time;
+	global $g_queries_array, $g_request_time;
 
 	# If a user is logged in, update their last visit time.
 	# We do this at the end of the page so that:
@@ -593,7 +593,7 @@ function html_footer( $p_file ) {
 
 	# print timings
 	if( ON == config_get( 'show_timer' ) ) {
-		$g_timer->print_times();
+		echo '<span class="italic">Time: ' . number_format( microtime(true) - $g_request_time, 4 ) . ' seconds.</span><br />';
 		echo sprintf( lang_get( 'memory_usage_in_kb' ), number_format( memory_get_peak_usage() / 1024 ) ), '<br />';
 	}
 
@@ -601,22 +601,22 @@ function html_footer( $p_file ) {
 	if( helper_show_queries() ) {
 		$t_count = count( $g_queries_array );
 		echo "\t", $t_count, ' ', lang_get( 'total_queries_executed' ), '<br />', "\n";
-		$t_unique_queries = 0;
-		$t_shown_queries = array();
-		for( $i = 0;$i < $t_count;$i++ ) {
-			if( !in_array( $g_queries_array[$i][0], $t_shown_queries ) ) {
-				$t_unique_queries++;
-				$g_queries_array[$i][3] = false;
-				array_push( $t_shown_queries, $g_queries_array[$i][0] );
-			} else {
-				$g_queries_array[$i][3] = true;
-			}
-		}
-		echo "\t", $t_unique_queries, ' ', lang_get( 'unique_queries_executed' ), '<br />', "\n";
 		if( ON == config_get( 'show_queries_list' ) ) {
+			$t_unique_queries = 0;
+			$t_shown_queries = array();
+			for( $i = 0;$i < $t_count;$i++ ) {
+				if( !in_array( $g_queries_array[$i][0], $t_shown_queries ) ) {
+					$t_unique_queries++;
+					$g_queries_array[$i][3] = false;
+					array_push( $t_shown_queries, $g_queries_array[$i][0] );
+				} else {
+					$g_queries_array[$i][3] = true;
+				}
+			}
+
+			echo "\t", $t_unique_queries, ' ', lang_get( 'unique_queries_executed' ), '<br />', "\n";
 			echo "\t", '<table>', "\n";
 			$t_total = 0;
-			$t_lang_charset = lang_get( 'charset' );
 			for( $i = 0;$i < $t_count;$i++ ) {
 				$t_time = $g_queries_array[$i][1];
 				$t_caller = $g_queries_array[$i][2];
@@ -627,12 +627,12 @@ function html_footer( $p_file ) {
 				}
 				echo "\t", '<tr valign="top"><td', $t_style_tag, '>', ( $i + 1 ), '</td>';
 				echo '<td', $t_style_tag, '>', $t_time, '</td>';
-				echo '<td', $t_style_tag, '><span style="color: gray;">', $t_caller, '</span><br />', string_html_specialchars( $g_queries_array[$i][0], $t_lang_charset ), '</td></tr>', "\n";
+				echo '<td', $t_style_tag, '><span style="color: gray;">', $t_caller, '</span><br />', string_html_specialchars( $g_queries_array[$i][0] ), '</td></tr>', "\n";
 			}
 
 			# @@@ Note sure if we should localize them given that they are debug info.  Will add if requested by users.
 			echo "\t", '<tr><td></td><td>', $t_total, '</td><td>SQL Queries Total Time</td></tr>', "\n";
-			echo "\t", '<tr><td></td><td>', round( microtime_float() - $g_request_time, 4 ), '</td><td>Page Request Total Time</td></tr>', "\n";
+			echo "\t", '<tr><td></td><td>', round( microtime(true) - $g_request_time, 4 ), '</td><td>Page Request Total Time</td></tr>', "\n";
 			echo "\t", '</table>', "\n";
 		}
 	}

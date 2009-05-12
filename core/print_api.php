@@ -26,10 +26,6 @@
 $t_core_dir = dirname( __FILE__ ) . DIRECTORY_SEPARATOR;
 
 /**
- * requires ajax_api
- */
-require_once( $t_core_dir . 'ajax_api.php' );
-/**
  * requires current_user_api
  */
 require_once( $t_core_dir . 'current_user_api.php' );
@@ -91,7 +87,7 @@ function print_header_redirect( $p_url, $p_die = true, $p_sanitize = false, $p_a
 
 	# don't send more headers if they have already been sent (guideweb)
 	if( !headers_sent() ) {
-		header( 'Content-Type: text/html; charset=' . lang_get( 'charset' ) );
+		header( 'Content-Type: text/html; charset=utf-8' );
 
 		if( ON == $t_use_iis ) {
 			header( "Refresh: 0;url=$t_url" );
@@ -467,21 +463,20 @@ function print_project_option_list( $p_project_id = null, $p_include_all_project
 	}
 
 	$t_project_count = count( $t_project_ids );
-	$t_charset = lang_get( 'charset' );
 	for( $i = 0;$i < $t_project_count;$i++ ) {
 		$t_id = $t_project_ids[$i];
 		if( $t_id != $p_filter_project_id ) {
 			echo "<option value=\"$t_id\"";
 			check_selected( $p_project_id, $t_id );
-			echo '>' . string_html_specialchars( string_strip_hrefs( project_get_field( $t_id, 'name' ) ), $t_charset ) . '</option>' . "\n";
-			print_subproject_option_list( $t_id, $p_project_id, $p_filter_project_id, $p_trace, Array(), $t_charset );
+			echo '>' . string_html_specialchars( string_strip_hrefs( project_get_field( $t_id, 'name' ) ) ) . '</option>' . "\n";
+			print_subproject_option_list( $t_id, $p_project_id, $p_filter_project_id, $p_trace, Array() );
 		}
 	}
 }
 
 # --------------------
 # List projects that the current user has access to
-function print_subproject_option_list( $p_parent_id, $p_project_id = null, $p_filter_project_id = null, $p_trace = false, $p_parents = Array(), $p_charset = null ) {
+function print_subproject_option_list( $p_parent_id, $p_project_id = null, $p_filter_project_id = null, $p_trace = false, $p_parents = Array() ) {
 	array_push( $p_parents, $p_parent_id );
 	$t_project_ids = current_user_get_accessible_subprojects( $p_parent_id );
 	$t_project_count = count( $t_project_ids );
@@ -495,7 +490,7 @@ function print_subproject_option_list( $p_parent_id, $p_project_id = null, $p_fi
 			echo "$t_full_id\"";
 			check_selected( $p_project_id, $t_full_id );
 			echo '>' . str_repeat( '&nbsp;', count( $p_parents ) ) . str_repeat( '&raquo;', count( $p_parents ) ) . ' ' . string_html_specialchars( string_strip_hrefs( project_get_field( $t_id, 'name' ) ) ) . '</option>' . "\n";
-			print_subproject_option_list( $t_id, $p_project_id, $p_filter_project_id, $p_trace, $p_parents, $t_charset );
+			print_subproject_option_list( $t_id, $p_project_id, $p_filter_project_id, $p_trace, $p_parents );
 		}
 	}
 }
@@ -916,7 +911,7 @@ function print_status_option_list( $p_select_label, $p_current_value = 0, $p_all
 		}
 		echo '</select>';
 	} else {
-		echo MantisEnum::getLabel( 'status_enum_string', $p_current_value );
+		echo MantisEnum::getLabel( lang_get( 'status_enum_string' ), $p_current_value );
 	}
 }
 
@@ -1517,7 +1512,7 @@ function print_hidden_input( $p_field_key, $p_field_val ) {
 # This prints the little [?] link for user help
 # The $p_a_name is a link into the documentation.html file
 function print_documentation_link( $p_a_name = '' ) {
-
+	echo lang_get( $p_a_name ) . "\n";
 	# @@@ Disable documentation links for now.  May be re-enabled if linked to new manual.
 	# echo "<a href=\"doc/documentation.html#$p_a_name\" target=\"_info\">[?]</a>";
 }

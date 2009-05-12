@@ -25,14 +25,7 @@
 	# INCLUDES
 	###########################################################################
 
-	# --------------------
-	# timer analysis
-	function microtime_float() {
-		list( $usec, $sec ) = explode( " ", microtime() );
-		return ( (float)$usec + (float)$sec );
-	}
-
-	$g_request_time = microtime_float();
+	$g_request_time = microtime(true);
 
 	ob_start();
 
@@ -104,6 +97,15 @@
 	function __autoload( $className ) {
 		global $g_core_path;
 
+		switch ( $className ) {
+			case 'DisposableEmailChecker':
+				require_once( $g_core_path . 'disposable' . DIRECTORY_SEPARATOR . 'disposable.php' );
+				return;
+			case 'PHPMailer':
+				require_once( PHPMAILER_PATH . 'class.phpmailer.php' ); // phpmailer_path is defined in email api
+				return;
+		}
+
 		$t_require_path = $g_core_path . 'classes' . DIRECTORY_SEPARATOR . $className . '.class.php';
 
 		if ( file_exists( $t_require_path ) ) {
@@ -154,7 +156,6 @@
 	# Load rest of core in separate directory.
 
 	require_once( $t_core_path.'config_api.php' );
-	require_once( $t_core_path.'timer_api.php' );
 	require_once( $t_core_path.'logging_api.php' );
 
 	# load utility functions used by everything else
@@ -212,9 +213,6 @@
 		require_once( $t_overrides );
 	}
 
-	// initialize our timer
-	$g_timer = new BC_Timer;
-
 	// seed random number generator
 	list( $usec, $sec ) = explode( ' ', microtime() );
 	mt_srand( $sec*$usec );
@@ -256,10 +254,11 @@
 	}
 
 	// push push default language to speed calls to lang_get
-	lang_push( lang_get_default() );
+	if ( !isset( $g_skip_lang_load ) )
+		lang_push( lang_get_default() );
 
 	if ( !isset( $g_bypass_headers ) && !headers_sent() ) {
-		header( 'Content-type: text/html;charset=' . lang_get( 'charset' ) );
+		header( 'Content-type: text/html;charset=utf-8' );
 	}
 
 	# okay, let's init our template-system (an extended smarty-object)
@@ -289,4 +288,3 @@
 	if ( db_is_connected() ) {
 		project_cache_all();
 	}
-

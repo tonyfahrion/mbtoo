@@ -144,13 +144,6 @@
 
 	if ( config_get_global( 'admin_checks' ) == ON ) {
 
-		# Warning, if plain passwords are selected
-		if ( config_get( 'login_method' ) === PLAIN ) {
-			echo '<div class="warning" align="center">', "\n";
-			echo "\t", '<p><font color="red">', lang_get( 'warning_plain_password_authentication' ), '</font></p>', "\n";
-			echo '</div>', "\n";
-		}
-
 		# Generate a warning if administrator/root is valid.
 		$t_admin_user_id = user_get_id_by_name( 'administrator' );
 		if ( $t_admin_user_id !== false ) {
@@ -173,16 +166,13 @@
 			$t_db_version = config_get( 'database_version' , 0 );
 			# if db version is 0, we haven't moved to new installer.
 			if ( $t_db_version == 0 ) {
+				$t_upgrade_count = 0;
 				if ( db_table_exists( db_get_table( 'mantis_upgrade_table' ) ) ) {
 					$query = "SELECT COUNT(*) from " . db_get_table( 'mantis_upgrade_table' ) . ";";
 					$result = db_query_bound( $query );
-					if ( db_num_rows( $result ) < 1 ) {
-						$t_upgrade_count = 0;
-					} else {
+					if ( db_num_rows( $result ) > 0 ) {
 						$t_upgrade_count = (int)db_result( $result );
 					}
-				} else {
-					$t_upgrade_count = 0;
 				}
 
 				if ( $t_upgrade_count > 0 ) { # table exists, check for number of updates

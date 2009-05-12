@@ -35,39 +35,51 @@ $t_core_path = config_get_global( 'core_path' );
 require_once( $t_core_path . 'email_api.php' );
 require_once( $t_core_path . 'database_api.php' );
 
-$f_mail_test = gpc_get_bool( 'mail_test' );
-$f_password = gpc_get_string( 'password', null );
-
 define( 'BAD', 0 );
 define( 'GOOD', 1 );
+define( 'WARN', 2 );
+
+$f_showall = gpc_get_int( 'showall', false );
+
+$g_failed_test = false;
 
 function print_test_result( $p_result ) {
-	if( BAD == $p_result ) {
-		echo '<td bgcolor="#ff0088">BAD</td>';
-	}
-
-	if( GOOD == $p_result ) {
-		echo '<td bgcolor="#00ff88">GOOD</td>';
+	global $g_failed_test;
+	switch ( $p_result ) {
+		case BAD:
+			echo '<td bgcolor="#ff0088">BAD</td>';
+			$g_failed_test = true;
+			break;
+		case GOOD:
+			echo '<td bgcolor="#00ff88">GOOD</td>';
+			break;
+		case WARN:
+			echo '<td bgcolor="#E56717">WARN</td>';
+			break;
 	}
 }
 
-function print_yes_no( $p_result ) {
-	if(( 0 === $p_result ) || ( "no" === strtolower( $p_result ) ) ) {
-		echo 'No';
-	}
-
-	if(( 1 === $p_result ) || ( "yes" === strtolower( $p_result ) ) ) {
-		echo 'Yes';
+function print_info_row( $p_description, $p_info = null ) {
+	if( $p_info == null ) {
+		echo '<tr><td bgcolor="#ffffff" colspan="2">' . $p_description . '</td></tr>';
+	} else {
+		echo '<tr><td bgcolor="#ffffff">' . $p_description . '</td>';
+		echo '<td bgcolor="#ffffff">' . $p_info . '</td></tr>';
 	}
 }
 
 function print_test_row( $p_description, $p_pass, $p_info = null ) {
-	echo '<tr>';
-	echo '<td bgcolor="#ffffff">';
-	echo $p_description;
+	global $f_showall;
+	if ( $f_showall == false && $p_pass == true ) {
+		return $p_pass;
+	}
+	echo '<tr><td bgcolor="#ffffff">' .$p_description;
 	if( $p_info != null) {
-		echo '<br />';
-		echo '<i>' . $p_info . '</i>';
+		if( is_array( $p_info ) ) {
+			echo '<br /><i>' . $p_info[$p_pass] . '</i>';
+		} else {
+			echo '<br /><i>' . $p_info . '</i>';
+		}
 	}
 	echo '</td>';
 
@@ -78,6 +90,34 @@ function print_test_row( $p_description, $p_pass, $p_info = null ) {
 	}
 
 	echo '</tr>';
+
+	return $p_pass;
+}
+
+function print_test_warn_row( $p_description, $p_pass, $p_info = null ) {
+	global $f_showall;
+	if ( $f_showall == false && $p_pass == true ) {
+		return $p_pass;
+	}
+	echo '<tr><td bgcolor="#ffffff">' . $p_description;
+	if( $p_info != null) {
+		if( is_array( $p_info ) ) {
+			echo '<br /><i>' . $p_info[$p_pass] . '</i>';
+		} else {
+			echo '<br /><i>' . $p_info . '</i>';
+		}
+	}
+	echo '</td>';
+
+	if( $p_pass ) {
+		print_test_result( GOOD );
+	} else {
+		print_test_result( WARN );
+	}
+
+	echo '</tr>';
+
+	return $p_pass;
 }
 
 function test_bug_download_threshold() {
@@ -173,191 +213,93 @@ function check_zend_optimiser_version() {
 	return $t_pass;
 }
 
-$version = phpversion();
-?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html>
-<head>
-<title> MantisBT Administration - Check Installation </title>
-<link rel="stylesheet" type="text/css" href="admin.css" />
-</head>
-<body>
-<table width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffff">
-	<tr class="top-bar">
-		<td class="links">
-			[ <a href="index.php">Back to Administration</a> ]
-		</td>
-		<td class="title">
-			Check Installation
-		</td>
-	</tr>
-</table>
-<br /><br />
+function test_database_utf8() {
+	if ( !db_is_mysql() ) {
+		return;
+	}
 
-<?php
+	// table collation/character set check
+	$result = db_query_bound( 'SHOW TABLE STATUS' );
+	while( $row = db_fetch_array( $result ) ) {
+		print_test_row( 'Checking Table Collation is utf8 for ' . $row['Name'] . '....', substr( $row['Collation'], 0, 5 ) === 'utf8_', $row['Collation'] );
+	}
+
+	foreach( db_get_table_list() as $t_table ) {
+		if( db_table_exists( $t_table ) ) {
+			$result = db_query_bound( 'SHOW FULL FIELDS FROM ' . $t_table );
+			while( $row = db_fetch_array( $result ) ) {
+				if ( $row['Collation'] === null ) {
+					continue;
+				}
+				print_test_row( 'Checking Non-null Column Collation in ' . $t_table . ' is utf8 for ' . $row['Field'] . '....', substr( $row['Collation'], 0, 5 ) === 'utf8_', $row['Collation'] . ' ( ' . $row['Type'] . ')' );
+			}
+		}
+	}
+}
+
+
 	require_once( $t_core_path . 'obsolete.php' );
+
+	html_page_top( 'MantisBT Administration - Check Installation' );
+
 ?>
-
-<table width="100%" bgcolor="#222222" border="0" cellpadding="10" cellspacing="1">
+<table class="width75" align="center" cellspacing="1">
 <tr>
-	<td bgcolor="#e8e8e8" colspan="2">
-		<span class="title">Checking your installation</span>
-	</td>
+<td class="form-title" width="30%" colspan="2"><?php echo 'Checking your installation' ?></td>
 </tr>
 
+<?php 
 
-<!-- Test PHP Version -->
-<tr>
-	<td bgcolor="#ffffff">
-		MantisBT requires at least <b>PHP <?php echo PHP_MIN_VERSION?></b>. You are running <b>PHP <?php echo $version?>
-	</td>
-	<?php
-		$result = version_compare( phpversion(), PHP_MIN_VERSION, '>=' );
-if( false == $result ) {
-	print_test_result( BAD );
-}
-else {
-	print_test_result( GOOD );
-}
-?>
-</tr>
+print_test_row( 'MantisBT requires at least <b>PHP ' . PHP_MIN_VERSION . '</b>. You are running <b>PHP ' . phpversion(), $result = version_compare( phpversion(), PHP_MIN_VERSION, '>=' ) );
 
-<!-- Test DATABASE part 1 -->
-<tr>
-	<td bgcolor="#ffffff">
-		Opening connection to database [<?php echo config_get_global( 'database_name' )?>] on host [<?php echo config_get_global( 'hostname' )?>] with username [<?php echo config_get_global( 'db_username' )?>]
-	</td>
-	<?php
-		$result = @db_connect( config_get_global( 'dsn', false ), config_get_global( 'hostname' ), config_get_global( 'db_username' ), config_get_global( 'db_password' ), config_get_global( 'database_name' ) );
-if( false == $result ) {
-	print_test_result( BAD );
+if ( !print_test_row( 'Checking Config File Exists', file_exists( $g_absolute_path . 'config_inc.php' ), array( false => 'Please use install.php to perform initial installation <a href="install.php">Click here</a>' ) ) ) {
+	die;
 }
-else {
-	print_test_result( GOOD );
+
+print_test_row( 'Opening connection to database [' . config_get_global( 'database_name' ) . '] on host [' . config_get_global( 'hostname' ) . '] with username [' . config_get_global( 'db_username' ) . ']', @db_connect( config_get_global( 'dsn', false ), config_get_global( 'hostname' ), config_get_global( 'db_username' ), config_get_global( 'db_password' ), config_get_global( 'database_name' ) ) != false );
+if( !db_is_connected() ) {
+	print_info_row( 'Database is not connected - Can not continue checks' );
 }
-?>
-</tr>
 
-<!-- Test DATABASE part 2 -->
-<?php if( db_is_connected() ) {
-	$t_serverinfo = $g_db->ServerInfo()?>
-<tr>
-	<td bgcolor="#ffffff">
-		Adodb Version
-	</td>
-	<td bgcolor="#ffffff">
-			<?php echo $g_db->Version() ?>
-	</td>
-</tr>
-<tr>
-	<td bgcolor="#ffffff">
-		Database Type (adodb)
-	</td>
-	<td bgcolor="#ffffff">
-			<?php echo $g_db->databaseType?>
-	</td>
-</tr><tr>
-	<td bgcolor="#ffffff">
-			Database Provider (adodb)
-	</td>
-	<td bgcolor="#ffffff">
-				<?php echo $g_db->dataProvider?>
-	</td>
-</tr><tr>
-	<td bgcolor="#ffffff">
-		Database Server Description (adodb)
-	</td>
-	<td bgcolor="#ffffff">
-			<?php echo $t_serverinfo['description']?>
-	</td>
-</tr><tr>
-	<td bgcolor="#ffffff">
-		Database Server Description (version)
-	</td>
-	<td bgcolor="#ffffff">
-			<?php echo $t_serverinfo['version']?>
-	</td>
-</tr>
-<?php
-}?>
+print_test_warn_row( 'Checking adodb version...', version_compare( $g_db->Version(), '5.05', '>=' ), $g_db->Version() );
 
-<!-- Absolute path check -->
-<tr>
-	<td bgcolor="#ffffff">
-		Checking to see if your absolute_path config option has a trailing slash: "<?php echo config_get_global( 'absolute_path' )?>"
-	</td>
-	<?php
-		$t_absolute_path = config_get_global( 'absolute_path' );
+print_test_row('Checking using bundled adodb with some drivers...', !(db_is_pgsql() || db_is_mssql() || db_is_db2()) || strstr($ADODB_vers, 'MantisBT Version') !== false );
+$t_serverinfo = $g_db->ServerInfo();
+	
+print_info_row( 'Database Type (adodb)', $g_db->databaseType );
+print_info_row( 'Database Provider (adodb)', $g_db->dataProvider );
+print_info_row( 'Database Server Description (adodb)', $t_serverinfo['description'] );
+print_info_row( 'Database Server Description (version)', $t_serverinfo['version'] );
 
-if(( "\\" == substr( $t_absolute_path, -1, 1 ) ) || ( "/" == substr( $t_absolute_path, -1, 1 ) ) ) {
-	print_test_result( GOOD );
-}
-else {
-	print_test_result( BAD );
-}
-?>
-</tr>
+print_test_row( 'Checking to see if your absolute_path config option has a trailing slash: "' . config_get_global( 'absolute_path' ) . '"', ( "\\" == substr( config_get_global( 'absolute_path' ), -1, 1 ) ) || ( "/" == substr( config_get_global( 'absolute_path' ), -1, 1 ) ) );
 
-<?php
-# Windows-only checks
+// Windows-only checks
 if( substr( php_uname(), 0, 7 ) == 'Windows' ) {
-	?>
-<!-- Email Validation -->
-<tr>
-	<td bgcolor="#ffffff">
-		Is validate_email set to OFF?
-	</td>
-	<?php
-		if( ON != config_get_global( 'validate_email' ) ) {
-		print_test_result( GOOD );
-	} else {
-		print_test_result( BAD );
-	}
-	?>
-</tr>
-
-<!-- MX Record Checking -->
-<tr>
-	<td bgcolor="#ffffff">
-		Is check_mx_record set to OFF?
-	</td>
-	<?php
-		if( ON != config_get_global( 'check_mx_record' ) ) {
-		print_test_result( GOOD );
-	} else {
-		print_test_result( BAD );
-	}
-	?>
-</tr>
-<?php
+	print_test_row( 'validate_email (if ON) requires php 5.3 on windows...',
+		OFF == config_get_global( 'validate_email' ) || ON == config_get_global( 'validate_email' ) && version_compare( phpversion(), '5.3.0', '>=' ) );
+	print_test_row( 'check_mx_record (if ON) requires php 5.3 on windows...',
+		OFF == config_get_global( 'check_mx_record' ) || ON == config_get_global( 'check_mx_record' ) && version_compare( phpversion(), '5.3.0', '>=' ) );
 }
 
-# windows-only check?>
-
-<!-- PHP Setup check -->
-<?php
 $t_vars = array(
 	'magic_quotes_gpc',
-	'gpc_order',
-	'variables_order',
 	'include_path',
-	'short_open_tag',
-	'mssql.textsize',
-	'mssql.textlimit',
 );
 
 while( list( $t_foo, $t_var ) = each( $t_vars ) ) {
-	?>
-<tr>
-	<td bgcolor="#ffffff">
-		<?php echo $t_var?>
-	</td>
-	<td bgcolor="#ffffff">
-		<?php echo ini_get( $t_var )?>
-	</td>
-</tr>
-<?php
+	print_info_row( $t_var, ini_get( $t_var ) );
 }
+
+if ( db_is_mssql() ) {
+	if ( print_test_row( 'check mssql textsize in php.ini...', ini_get( 'mssql.textsize' ) != 4096, ini_get( 'mssql.textsize' ) ) ) {
+		print_test_warn_row( 'check mssql textsize in php.ini...', ini_get( 'mssql.textsize' ) == 2147483647, ini_get( 'mssql.textsize' ) );
+	}
+	if ( print_test_row( 'check mssql textsize in php.ini...', ini_get( 'mssql.textlimit' ) != 4096 , ini_get( 'mssql.textlimit' ) ) ) {
+		print_test_warn_row( 'check mssql textsize in php.ini...', ini_get( 'mssql.textsize' ) == 2147483647, ini_get( 'mssql.textsize' ) );
+	}
+}
+print_test_row( 'check variables_order includes GPCS', stristr( ini_get( 'variables_order' ), 'G' ) && stristr( ini_get( 'variables_order' ), 'P' ) && stristr( ini_get( 'variables_order' ), 'C' ) && stristr( ini_get( 'variables_order' ), 'S' ), ini_get( 'variables_order' ) );
+
 
 test_bug_download_threshold();
 test_bug_attachments_allow_flags();
@@ -416,181 +358,56 @@ if( ON == config_get_global( 'use_jpgraph' ) ) {
 
 print_test_row( 'Checking if ctype is enabled in php (required for rss feeds)....', extension_loaded('ctype') );
 
+print_test_row( 'Checking for mysql is at least version 4.1...', !(db_is_mysql() && version_compare( $t_serverinfo['version'], '4.1.0', '<' ) ) );
+print_test_row( 'Checking for broken mysql version ( bug 10250)...', !(db_is_mysql() && $t_serverinfo['version'] == '4.1.21') );
 
-?>
-</table>
+test_database_utf8();
 
-<!-- register_globals check -->
-<?php
-	if( ini_get_bool( 'register_globals' ) ) {?>
-		<br />
+print_test_row( 'Checking Register Globals is set to off', ! ini_get_bool( 'register_globals' ) );
 
-		<table width="100%" bgcolor="#222222" border="0" cellpadding="20" cellspacing="1">
-		<tr>
-			<td bgcolor="#ffcc22">
-				<span class="title">WARNING - register_globals - WARNING</span><br /><br />
+print_test_row( 'Checking CRYPT_FULL_SALT is NOT logon method', ! ( CRYPT_FULL_SALT == config_get_global( 'login_method' ) ) );
 
-				You have register_globals enabled in PHP, which is considered a security risk.  Since version 0.18, MantisBT has no longer relied on register_globals being enabled.  PHP versions later that 4.2.0 have this option disabled by default.  For more information on the security issues associated with enabling register_globals, see <a href="http://www.php.net/manual/en/security.globals.php">this page</a>.
+print_test_warn_row( 'Warn if passwords are stored in PLAIN text', ! ( PLAIN == config_get_global( 'login_method' ) ) );
+print_test_warn_row( 'Warn if CRYPT is used (not MD5) for passwords', ! ( CRYPT == config_get_global( 'login_method' ) ) );
 
-				If you have no other PHP applications that rely on register_globals, you should add the line <pre>register_globals = Off</pre> to your php.ini file;  if you do have other applications that require register_globals, you could consider disabling it for your MantisBT installation by adding the line <pre>php_value register_globals off</pre> to a <tt>.htaccess</tt> file or a <tt>&lt;Directory&gt;</tt> or <tt>&lt;Location&gt;</tt> block in your apache configuration file.  See the apache documentation if you require more information.
-			</td>
-		</tr>
-		</table>
+if ( config_get_global( 'allow_file_upload' ) ) {
+	print_test_row( 'Checking that fileuploads are allowed in php (enabled in mantis config)', ini_get_bool( 'file_uploads' ) );
+	
+	print_info_row( 'PHP variable "upload_max_filesize"', ini_get_number( 'upload_max_filesize' ) );
+	print_info_row( 'PHP variable "post_max_size"', ini_get_number( 'post_max_size' ) );
+	print_info_row( 'MantisBT variable "max_file_size"', config_get_global( 'max_file_size' ) );
 
-		<br /><?php
+	print_test_row( 'Checking MantisBT upload file size is less than php', ( config_get_global( 'max_file_size' ) <= ini_get_number( 'post_max_size' ) ) && ( config_get_global( 'max_file_size' ) <= ini_get_number( 'upload_max_filesize' ) ) );
+
+	if( DATABASE == config_get_global( 'file_upload_method' ) ) {
+		print_info_row( 'There may also be settings in your web server and database that prevent you from  uploading files or limit the maximum file size.  See the documentation for those packages if you need more information.');
+		if( 500 < min( ini_get_number( 'upload_max_filesize' ), ini_get_number( 'post_max_size' ), config_get_global( 'max_file_size' ) ) ) {
+			print_info_row( '<span class="error">Your current settings will most likely need adjustments to the PHP max_execution_time or memory_limit settings, the MySQL max_allowed_packet setting, or equivalent.' );
+		}
+	}
+	
+	print_info_row( 'There may also be settings in your web server that prevent you from  uploading files or limit the maximum file size.  See the documentation for those packages if you need more information.');
 }
 ?>
-
-<!-- login_method check -->
+</table>
 <?php
-	if( CRYPT_FULL_SALT == config_get_global( 'login_method' ) ) {?>
-		<br />
-
-		<table width="100%" bgcolor="#222222" border="0" cellpadding="20" cellspacing="1">
-		<tr>
-			<td bgcolor="#ff0088">
-				<span class="title">WARNING - login_method - WARNING</span><br /><br />
-
-				You are using CRYPT_FULL_SALT as your login method. This login method is deprecated and you should change the login method to either CRYPT (which is compatible) or MD5 (which is more secure). CRYPT_FULL_SALT will be removed in the next major release.
-
-				You can simply change the login_method in your configuration file. You don't need to do anything else, even if you migrate to MD5 (which produces incompatible hashes). This is because MantisBT will automatically convert the passwords as users log in.
-			</td>
-		</tr>
-		</table>
-
-		<br /><?php
-	} else if( MD5 != config_get_global( 'login_method' ) ) {?>
-		<br />
-
-		<table width="100%" bgcolor="#222222" border="0" cellpadding="20" cellspacing="1">
-		<tr>
-			<td bgcolor="#ffcc22">
-				<span class="title">NOTICE - login_method - NOTICE</span><br /><br />
-
-				You are not using MD5 as your login_method. The other login methods are mostly provided for backwards compatibility, but we recommend migrating to the more secure MD5.
-
-				You can simply change the login_method in your configuration file to MD5. MantisBT will automatically convert the passwords as users log in.
-			</td>
-		</tr>
-		</table>
-
-		<br /><?php
+	if ( $g_failed_test ) {
+?>
+	 <table width="100%" bgcolor="#222222" border="0" cellpadding="20" cellspacing="1">
+	<tr>
+		<td bgcolor="#f4f4f4">Some Tests Failed. Please correct failed tests before using MantisBT.</td>
+	</tr>
+	</table>
+<?php
+	} else {
+?>
+	 <table width="100%" bgcolor="#222222" border="0" cellpadding="20" cellspacing="1">
+	<tr>
+		<td bgcolor="#f4f4f4">All Tests Passed. If you would like to view passed tests click <a href="check.php?showall=1">here</a>.</td>
+	</tr>
+	</table>
+<?php	
 	}
 ?>
-<br />
-
-<!-- Uploads -->
-<table width="100%" bgcolor="#222222" border="0" cellpadding="20" cellspacing="1">
-<tr>
-	<td bgcolor="#f4f4f4">
-		<span class="title">File Uploads</span><br />
-		<?php
-			if( ini_get_bool( 'file_uploads' ) && config_get_global( 'allow_file_upload' ) ) {
-	?>
-				<p>File uploads are ENABLED.</p>
-				<p>File uploads will be stored <?php
-				switch( config_get_global( 'file_upload_method' ) ) {
-					case DATABASE:
-						echo 'in the DATABASE.';
-						break;
-					case DISK:
-						echo 'on DISK in the directory specified by the project.';
-						break;
-					case FTP:
-						echo 'on an FTP server (' . config_get_global( 'file_upload_ftp_server' ) . '), and cached locally.';
-						break;
-					default:
-						echo 'in an illegal place.';
-				}?>	</p>
-
-				<p>The following size settings are in effect.  Maximum upload size will be whichever of these is SMALLEST. </p>
-				<p>PHP variable 'upload_max_filesize': <?php echo ini_get_number( 'upload_max_filesize' )?> bytes<br />
-				PHP variable 'post_max_size': <?php echo ini_get_number( 'post_max_size' )?> bytes<br />
-				MantisBT variable 'max_file_size': <?php echo config_get_global( 'max_file_size' )?> bytes</p>
-
-		<?php
-				if( DATABASE == config_get_global( 'file_upload_method' ) ) {
-					echo '<p>There may also be settings in your web server and database that prevent you from  uploading files or limit the maximum file size.  See the documentation for those packages if you need more information. ';
-					if( 500 < min( ini_get_number( 'upload_max_filesize' ), ini_get_number( 'post_max_size' ), config_get_global( 'max_file_size' ) ) ) {
-						echo '<span class="error">Your current settings will most likely need adjustments to the PHP max_execution_time or memory_limit settings, the MySQL max_allowed_packet setting, or equivalent.</span>';
-					}
-				} else {
-					echo '<p>There may also be settings in your web server that prevent you from  uploading files or limit the maximum file size.  See the documentation for those packages if you need more information.';
-				}
-				echo '</p>';
-			} else {
-	?>
-				<p>File uploads are DISABLED.  To enable them, make sure <tt>$g_file_uploads = on</tt> is in your php.ini file and <tt>allow_file_upload = ON</tt> is in your MantisBT config file.</p>
-		<?php
-			}
-?>
-	</td>
-</tr>
-</table>
-<br />
-
-<!-- Email testing -->
-<a name="email" id="email" />
-<table width="100%" bgcolor="#222222" border="0" cellpadding="20" cellspacing="1">
-<tr>
-	<td bgcolor="#f4f4f4">
-		<span class="title">Testing Email</span>
-		<p>You can test the ability for MantisBT to send email notifications with this form.  Just click "Send Mail".  If the page takes a very long time to reappear or results in an error then you will need to investigate your php/mail server settings (see PHPMailer related settings in your config_inc.php, if they don't exist, copy from config_defaults_inc.php).  Note that errors can also appear in the server error log.  More help can be found at the <a href="http://www.php.net/manual/en/ref.mail.php">PHP website</a> if you are using the mail() PHPMailer sending mode.</p>
-		<?php
-		if( $f_mail_test ) {
-			echo '<b><font color="#ff0000">Testing Mail</font></b> - ';
-
-			# @@@ thraxisp - workaround to ensure a language is set without authenticating
-			#  will disappear when this is properly localized
-			lang_push( 'english' );
-
-			$t_email_data = new EmailData;
-			$t_email_data->email = config_get_global( 'administrator_email' );
-			$t_email_data->subject = 'Testing PHP mail() function';
-			$t_email_data->body = 'Your PHP mail settings appear to be correctly set.';
-			$t_email_data->metadata['priority'] = config_get( 'mail_priority' );
-			$t_email_data->metadata['charset'] = lang_get( 'charset', lang_get_current() );
-			$result = email_send( $t_email_data );
-
-			# $result = email_send( config_get_global( 'administrator_email' ), 'Testing PHP mail() function',	'Your PHP mail settings appear to be correctly set.');
-
-			if( !$result ) {
-				echo ' PROBLEMS SENDING MAIL TO: ' . config_get_global( 'administrator_email' ) . '. Please check your php/mail server settings.<br />';
-			} else {
-				echo ' mail() send successful.<br />';
-			}
-		}
-?>
-		<form method="post" action="<?php echo $_SERVER['PHP_SELF']?>#email">
-		Email Address: <?php echo config_get_global( 'administrator_email' );?><br />
-		<input type="submit" value="Send Mail" name="mail_test" />
-		</form>
-	</td>
-</tr>
-</table>
-<br />
-
-<!-- CRYPT CHECKS -->
-<a name="crypt" id="crypt" />
-<table width="100%" bgcolor="#aa0000" border="0" cellpadding="20" cellspacing="1">
-<tr>
-	<td bgcolor="#fff0f0">
-		<span class="title">Which types of Crypt() does your installation support:</span>
-		<p>
-		Standard DES:
-		<?php print_yes_no( CRYPT_STD_DES )?>
-		<br />
-		Extended DES:
-		<?php print_yes_no( CRYPT_EXT_DES )?>
-		<br />
-		MD5:
-		<?php print_yes_no( CRYPT_MD5 )?>
-		<br />
-		Blowfish:
-		<?php print_yes_no( CRYPT_BLOWFISH )?>
-		</p>
-	</td>
-</tr>
-</table>
 </body>
 </html>

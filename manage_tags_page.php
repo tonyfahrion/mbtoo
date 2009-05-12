@@ -40,7 +40,7 @@ compress_enable();
 
 html_page_top( lang_get( 'manage_tags_link' ) );
 
-print_manage_menu();
+print_manage_menu( 'manage_tags_page.php' );
 
 $t_can_edit = access_has_global_level( config_get( 'tag_edit_threshold' ) );
 $f_filter = strtoupper( gpc_get_string( 'filter', config_get( 'default_manage_tag_prefix' ) ) );
@@ -82,10 +82,10 @@ echo '</tr></table>';
 $t_where_params = array();
 
 if ( $f_filter === 'ALL' ) {
-	$t_where = '1';
+	$t_where = '';
 } else {
 	$t_where_params[] = db_prepare_string( $f_filter . '%' );
-	$t_where = db_helper_like( 'name' );
+	$t_where = 'WHERE ' . db_helper_like( 'name' );
 }
 
 # Set the number of Tags per page.
@@ -97,7 +97,7 @@ $t_total_tag_count = 0;
 $t_result = '';
 $t_query = "SELECT count(*)
 			FROM $t_tag_table
-			WHERE $t_where";
+			$t_where";
 
 $t_result = db_query_bound( $t_query, $t_where_params );
 $t_row = db_fetch_array( $t_result );
@@ -123,8 +123,7 @@ if ( $f_page_number < 1 ) {
 # Retrive Tags from tag table
 $t_query = "SELECT *
 		FROM $t_tag_table
-		WHERE " . $t_where .
-		' ORDER BY name';
+		$t_where ORDER BY name";
 
 $t_result = db_query_bound( $t_query, $t_where_params, $t_per_page, $t_offset );
 
